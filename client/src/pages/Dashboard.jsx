@@ -15,7 +15,9 @@ export default function Dashboard() {
     }
 
     axios
-      .get("http://localhost:5000/api/exams")
+      .get(
+        "https://online-assessment-platform-backend-1.onrender.com/api/exams"
+      )
       .then((res) => setExams(res.data));
   }, []);
 

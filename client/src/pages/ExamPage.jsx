@@ -166,11 +166,14 @@ export default function ExamPage() {
   =============================== */
   const submitExam = async () => {
     try {
-      await axios.post("http://localhost:5000/api/results/submit", {
-        examId: exam._id,
-        studentId: user._id,
-        answers,
-      });
+      await axios.post(
+        "https://online-assessment-platform-backend-1.onrender.com/api/results/submit",
+        {
+          examId: exam._id,
+          studentId: user._id,
+          answers,
+        }
+      );
 
       alert("✅ Exam submitted successfully");
       navigate("/dashboard");

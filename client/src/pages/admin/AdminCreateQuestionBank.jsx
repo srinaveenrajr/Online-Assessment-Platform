@@ -9,7 +9,9 @@ export default function AdminCreateQuestionBank() {
 
   useEffect(() => {
     axios
-      .get("http://localhost:5000/api/questions")
+      .get(
+        "https://online-assessment-platform-backend-1.onrender.com/api/questions"
+      )
       .then((res) => setQuestions(res.data));
   }, []);
 
@@ -21,11 +23,14 @@ export default function AdminCreateQuestionBank() {
 
   const createBank = async () => {
     try {
-      await axios.post("http://localhost:5000/api/question-banks", {
-        name,
-        description,
-        questions: selected,
-      });
+      await axios.post(
+        "https://online-assessment-platform-backend-1.onrender.com/api/question-banks",
+        {
+          name,
+          description,
+          questions: selected,
+        }
+      );
       alert("Question bank created");
       setName("");
       setDescription("");

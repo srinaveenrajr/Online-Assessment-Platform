@@ -11,20 +11,25 @@ export default function AdminCreateExam() {
 
   useEffect(() => {
     axios
-      .get("http://localhost:5000/api/question-banks")
+      .get(
+        "https://online-assessment-platform-backend-1.onrender.com/api/question-banks"
+      )
       .then((res) => setBanks(res.data));
   }, []);
 
   const createExam = async () => {
     try {
-      await axios.post("http://localhost:5000/api/exams", {
-        title,
-        questionBank: bankId,
-        startTime,
-        endTime,
-        duration,
-        totalMarks: 0,
-      });
+      await axios.post(
+        "https://online-assessment-platform-backend-1.onrender.com/api/exams",
+        {
+          title,
+          questionBank: bankId,
+          startTime,
+          endTime,
+          duration,
+          totalMarks: 0,
+        }
+      );
       alert("Exam created");
       setTitle("");
       setBankId("");

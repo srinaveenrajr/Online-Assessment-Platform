@@ -6,7 +6,9 @@ export default function AdminProctorLogs() {
 
   useEffect(() => {
     axios
-      .get("http://localhost:5000/api/proctor")
+      .get(
+        "https://online-assessment-platform-backend-1.onrender.com/api/proctor"
+      )
       .then((res) => setLogs(res.data))
       .catch((err) => console.error(err));
   }, []);

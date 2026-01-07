@@ -6,7 +6,9 @@ export default function AdminAnalytics() {
 
   useEffect(() => {
     axios
-      .get("http://localhost:5000/api/analytics/summary")
+      .get(
+        "https://online-assessment-platform-backend-1.onrender.com/api/analytics/summary"
+      )
       .then((res) => setData(res.data))
       .catch((err) => console.error(err));
   }, []);
