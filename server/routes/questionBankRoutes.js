@@ -1,27 +1,27 @@
 const express = require("express");
-const Question = require("../models/Question");
+const QuestionBank = require("../models/QuestionBank");
 
 const router = express.Router();
 
 /**
- * CREATE QUESTION
+ * CREATE QUESTION BANK
  */
 router.post("/", async (req, res) => {
   try {
-    const question = await Question.create(req.body);
-    res.status(201).json(question);
+    const bank = await QuestionBank.create(req.body);
+    res.status(201).json(bank);
   } catch (err) {
     res.status(500).json({ message: err.message });
   }
 });
 
 /**
- * GET ALL QUESTIONS
+ * GET ALL QUESTION BANKS
  */
 router.get("/", async (req, res) => {
   try {
-    const questions = await Question.find();
-    res.json(questions);
+    const banks = await QuestionBank.find().populate("questions");
+    res.json(banks);
   } catch (err) {
     res.status(500).json({ message: err.message });
   }

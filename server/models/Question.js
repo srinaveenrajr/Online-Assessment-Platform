@@ -8,7 +8,7 @@ const questionSchema = new mongoose.Schema(
     },
     options: {
       type: [String],
-      default: [],
+      required: true,
     },
     correctAnswer: {
       type: String,
@@ -16,8 +16,8 @@ const questionSchema = new mongoose.Schema(
     },
     type: {
       type: String,
-      enum: ["mcq", "truefalse"],
-      required: true,
+      enum: ["MCQ", "TRUE_FALSE"],
+      default: "MCQ",
     },
     topic: {
       type: String,
@@ -26,10 +26,7 @@ const questionSchema = new mongoose.Schema(
     difficulty: {
       type: String,
       enum: ["easy", "medium", "hard"],
-      required: true,
-    },
-    explanation: {
-      type: String,
+      default: "easy",
     },
   },
   { timestamps: true }

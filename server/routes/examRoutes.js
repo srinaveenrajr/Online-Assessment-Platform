@@ -1,39 +1,38 @@
 const express = require("express");
+const Exam = require("../models/Exam");
+
 const router = express.Router();
 
-const Exam = require("../models/Exam");
-const Result = require("../models/Result");
-const { protect } = require("../middleware/authMiddleware");
-
 /**
- * GET ALL EXAMS (for dashboard)
+ * CREATE EXAM (ADMIN)
  */
-router.get("/", protect, async (req, res) => {
+router.post("/", async (req, res) => {
   try {
-    const exams = await Exam.find();
-    res.json(exams);
-  } catch (error) {
-    res.status(500).json({ message: error.message });
+    const exam = await Exam.create(req.body);
+    res.status(201).json(exam);
+  } catch (err) {
+    res.status(500).json({ message: err.message });
   }
 });
 
 /**
- * START EXAM (with validation)
+ * START EXAM (STUDENT)
  */
-router.get("/:id/start", protect, async (req, res) => {
+router.get("/", async (req, res) => {
   try {
-    const attempted = await Result.findOne({
-      user: req.user._id,
-      exam: req.params.id,
+    const exams = await Exam.find();
+    res.json(exams);
+  } catch (err) {
+    res.status(500).json({ message: err.message });
+  }
+});
+
+router.get("/:id/start", async (req, res) => {
+  try {
+    const exam = await Exam.findById(req.params.id).populate({
+      path: "questionBank",
+      populate: { path: "questions" },
     });
-
-    if (attempted) {
-      return res.status(403).json({
-        message: "Exam already attempted",
-      });
-    }
-
-    const exam = await Exam.findById(req.params.id).populate("questions");
 
     if (!exam) {
       return res.status(404).json({ message: "Exam not found" });
@@ -41,17 +40,13 @@ router.get("/:id/start", protect, async (req, res) => {
 
     const now = new Date();
 
-    if (exam.startTime && now < exam.startTime) {
-      return res.status(403).json({ message: "Exam not started yet" });
-    }
-
-    if (exam.endTime && now > exam.endTime) {
-      return res.status(403).json({ message: "Exam expired" });
+    if (now < exam.startTime || now > exam.endTime) {
+      return res.status(403).json({ message: "Exam not active" });
     }
 
     res.json(exam);
-  } catch (error) {
-    res.status(500).json({ message: "Server error" });
+  } catch (err) {
+    res.status(500).json({ message: err.message });
   }
 });
 

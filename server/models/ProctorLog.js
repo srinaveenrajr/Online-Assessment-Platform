@@ -1,6 +1,6 @@
 const mongoose = require("mongoose");
 
-const resultSchema = new mongoose.Schema(
+const proctorLogSchema = new mongoose.Schema(
   {
     student: {
       type: mongoose.Schema.Types.ObjectId,
@@ -12,16 +12,15 @@ const resultSchema = new mongoose.Schema(
       ref: "Exam",
       required: true,
     },
-    score: {
-      type: Number,
+    type: {
+      type: String, // TAB_SWITCH, FULLSCREEN_EXIT, CAMERA_DENIED
       required: true,
     },
-    answers: {
-      type: Array,
-      required: true,
+    message: {
+      type: String,
     },
   },
   { timestamps: true }
 );
 
-module.exports = mongoose.model("Result", resultSchema);
+module.exports = mongoose.model("ProctorLog", proctorLogSchema);

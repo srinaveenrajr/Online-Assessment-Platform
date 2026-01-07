@@ -6,20 +6,25 @@ const examSchema = new mongoose.Schema(
       type: String,
       required: true,
     },
-    questions: [
-      {
-        type: mongoose.Schema.Types.ObjectId,
-        ref: "Question",
-      },
-    ],
+    questionBank: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: "QuestionBank",
+      required: true,
+    },
     startTime: {
       type: Date,
+      required: true,
     },
     endTime: {
       type: Date,
+      required: true,
     },
     duration: {
       type: Number, // minutes
+      required: true,
+    },
+    totalMarks: {
+      type: Number,
       required: true,
     },
   },

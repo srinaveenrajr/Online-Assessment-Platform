@@ -1,109 +1,228 @@
-import React, { useState, useEffect } from "react";
+import React, { useEffect, useState } from "react";
 import axios from "axios";
 import { useParams, useNavigate } from "react-router-dom";
-import Navbar from "../components/Navbar";
 
 export default function ExamPage() {
-  const { id } = useParams();
+  const { id } = useParams(); // examId
   const navigate = useNavigate();
 
-  const [exam, setExam] = useState(null);
-  const [answers, setAnswers] = useState({});
+  const user = JSON.parse(localStorage.getItem("user"));
 
+  /* ===============================
+     🔒 BLOCK ADMIN COMPLETELY
+  =============================== */
+  if (!user) {
+    return (
+      <div className="p-6 text-red-600 font-bold">
+        Please login to continue.
+      </div>
+    );
+  }
+
+  if (user.role === "admin") {
+    return (
+      <div className="p-6 text-red-600 font-bold">
+        ❌ Admins are not allowed to take exams.
+      </div>
+    );
+  }
+
+  /* ===============================
+     STATE
+  =============================== */
+  const [exam, setExam] = useState(null);
+  const [answers, setAnswers] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState("");
+
+  /* ===============================
+     FETCH EXAM
+  =============================== */
   useEffect(() => {
     const fetchExam = async () => {
       try {
-        setAnswers({}); // clear old answers on re-attempt
-
-        const token = localStorage.getItem("token");
-
-        // ✅ IMPORTANT: CALL /start ROUTE
         const res = await axios.get(
-          `http://localhost:5000/api/exams/${id}/start`,
-          {
-            headers: {
-              Authorization: `Bearer ${token}`,
-            },
-          }
+          `http://localhost:5000/api/exams/${id}/start`
         );
 
+        // 🔒 Safety checks
+        if (
+          !res.data ||
+          !res.data.questionBank ||
+          !res.data.questionBank.questions ||
+          res.data.questionBank.questions.length === 0
+        ) {
+          setError("This exam has no questions assigned.");
+          setLoading(false);
+          return;
+        }
+
         setExam(res.data);
+        setLoading(false);
       } catch (err) {
-        alert(err.response?.data?.message || "Failed to load exam");
+        setError("Exam not available or not active.");
+        setLoading(false);
       }
     };
 
     fetchExam();
   }, [id]);
 
-  const handleSubmit = async (e) => {
-    e.preventDefault();
+  /* ===============================
+     TAB SWITCH DETECTION
+  =============================== */
+  useEffect(() => {
+    if (!exam) return;
 
+    const handleVisibilityChange = async () => {
+      if (document.hidden) {
+        alert("⚠️ Tab switch detected!");
+
+        await axios.post("http://localhost:5000/api/proctor/log", {
+          studentId: user._id,
+          examId: exam._id,
+          type: "TAB_SWITCH",
+          message: "Student switched tab",
+        });
+      }
+    };
+
+    document.addEventListener("visibilitychange", handleVisibilityChange);
+
+    return () =>
+      document.removeEventListener("visibilitychange", handleVisibilityChange);
+  }, [exam, user]);
+
+  /* ===============================
+     FULLSCREEN ENFORCEMENT
+  =============================== */
+  useEffect(() => {
+    if (!exam) return;
+
+    const requestFullscreen = async () => {
+      try {
+        await document.documentElement.requestFullscreen();
+      } catch {}
+    };
+
+    requestFullscreen();
+
+    const handleExitFullscreen = async () => {
+      if (!document.fullscreenElement) {
+        alert("⚠️ Fullscreen exit detected!");
+
+        await axios.post("http://localhost:5000/api/proctor/log", {
+          studentId: user._id,
+          examId: exam._id,
+          type: "FULLSCREEN_EXIT",
+          message: "Student exited fullscreen",
+        });
+      }
+    };
+
+    document.addEventListener("fullscreenchange", handleExitFullscreen);
+
+    return () =>
+      document.removeEventListener("fullscreenchange", handleExitFullscreen);
+  }, [exam, user]);
+
+  /* ===============================
+     CAMERA CHECK
+  =============================== */
+  useEffect(() => {
+    if (!exam) return;
+
+    navigator.mediaDevices.getUserMedia({ video: true }).catch(async () => {
+      alert("⚠️ Camera access denied!");
+
+      await axios.post("http://localhost:5000/api/proctor/log", {
+        studentId: user._id,
+        examId: exam._id,
+        type: "CAMERA_DENIED",
+        message: "Camera permission denied",
+      });
+    });
+  }, [exam, user]);
+
+  /* ===============================
+     HANDLE ANSWERS
+  =============================== */
+  const handleAnswerChange = (questionId, selectedAnswer) => {
+    setAnswers((prev) => {
+      const existing = prev.find((a) => a.questionId === questionId);
+
+      if (existing) {
+        return prev.map((a) =>
+          a.questionId === questionId ? { ...a, selectedAnswer } : a
+        );
+      }
+
+      return [...prev, { questionId, selectedAnswer }];
+    });
+  };
+
+  /* ===============================
+     SUBMIT EXAM
+  =============================== */
+  const submitExam = async () => {
     try {
-      const token = localStorage.getItem("token");
+      await axios.post("http://localhost:5000/api/results/submit", {
+        examId: exam._id,
+        studentId: user._id,
+        answers,
+      });
 
-      const formattedAnswers = Object.keys(answers).map((qId) => ({
-        questionId: qId,
-        selectedAnswer: answers[qId],
-      }));
-
-      const res = await axios.post(
-        "http://localhost:5000/api/results/submit",
-        {
-          examId: id,
-          answers: formattedAnswers,
-        },
-        {
-          headers: {
-            Authorization: `Bearer ${token}`,
-          },
-        }
-      );
-
-      navigate(`/result/${id}`);
-    } catch (err) {
-      alert(err.response?.data?.message || "Submission failed");
+      alert("✅ Exam submitted successfully");
+      navigate("/dashboard");
+    } catch {
+      alert("❌ Failed to submit exam");
     }
   };
 
-  if (!exam) {
-    return <div className="p-8 text-white">Loading exam...</div>;
+  /* ===============================
+     UI STATES
+  =============================== */
+  if (loading) {
+    return <div className="p-6">Loading exam...</div>;
   }
 
+  if (error) {
+    return <div className="p-6 text-red-600 font-bold">{error}</div>;
+  }
+
+  /* ===============================
+     MAIN UI
+  =============================== */
   return (
-    <>
-      <Navbar />
+    <div className="p-6">
+      <h1 className="text-2xl font-bold mb-4">{exam.title}</h1>
 
-      <div className="p-8 bg-gray-900 min-h-screen text-white">
-        <h2 className="text-3xl font-bold mb-6">{exam.title}</h2>
+      {exam.questionBank.questions.map((q, index) => (
+        <div key={q._id} className="border p-4 mb-4 rounded">
+          <p className="font-semibold mb-2">
+            {index + 1}. {q.questionText}
+          </p>
 
-        <form onSubmit={handleSubmit}>
-          {exam.questions.map((q, index) => (
-            <div key={q._id} className="mb-6">
-              <p className="mb-2 font-semibold">
-                {index + 1}. {q.questionText}
-              </p>
-
+          {q.options.map((opt, i) => (
+            <label key={i} className="block">
               <input
-                type="text"
-                className="w-full p-2 rounded text-black"
-                placeholder="Enter your answer"
-                onChange={(e) =>
-                  setAnswers({ ...answers, [q._id]: e.target.value })
-                }
-                required
+                type="radio"
+                name={q._id}
+                onChange={() => handleAnswerChange(q._id, opt)}
+                className="mr-2"
               />
-            </div>
+              {opt}
+            </label>
           ))}
+        </div>
+      ))}
 
-          <button
-            type="submit"
-            className="bg-green-600 px-6 py-2 rounded font-bold"
-          >
-            Submit Exam
-          </button>
-        </form>
-      </div>
-    </>
+      <button
+        onClick={submitExam}
+        className="bg-blue-600 text-white px-6 py-2 rounded"
+      >
+        Submit Exam
+      </button>
+    </div>
   );
 }
