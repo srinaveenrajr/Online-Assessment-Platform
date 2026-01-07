@@ -15,6 +15,8 @@ import AdminCreateQuestionBank from "./pages/admin/AdminCreateQuestionBank";
 import AdminCreateExam from "./pages/admin/AdminCreateExam";
 import AdminAnalytics from "./pages/admin/AdminAnalytics";
 import AdminProctorLogs from "./pages/admin/AdminProctorLogs";
+import AdminRoute from "./components/AdminRoute";
+import StudentRoute from "./components/StudentRoute";
 
 import "./index.css";
 
@@ -27,21 +29,81 @@ ReactDOM.createRoot(document.getElementById("root")).render(
         <Route path="/login" element={<Login />} />
         <Route path="/register" element={<Register />} />
 
-        {/* STUDENT */}
-        <Route path="/dashboard" element={<Dashboard />} />
-        <Route path="/exam/:id" element={<ExamPage />} />
-        <Route path="/result/:id" element={<ResultPage />} />
+        {/* STUDENT (PROTECTED) */}
+        <Route
+          path="/dashboard"
+          element={
+            <StudentRoute>
+              <Dashboard />
+            </StudentRoute>
+          }
+        />
+        <Route
+          path="/exam/:id"
+          element={
+            <StudentRoute>
+              <ExamPage />
+            </StudentRoute>
+          }
+        />
+        <Route
+          path="/result/:id"
+          element={
+            <StudentRoute>
+              <ResultPage />
+            </StudentRoute>
+          }
+        />
 
-        {/* ADMIN */}
-        <Route path="/admin/dashboard" element={<AdminDashboard />} />
-        <Route path="/admin/question" element={<AdminCreateQuestion />} />
+        {/* ADMIN (PROTECTED) */}
+        <Route
+          path="/admin/dashboard"
+          element={
+            <AdminRoute>
+              <AdminDashboard />
+            </AdminRoute>
+          }
+        />
+        <Route
+          path="/admin/question"
+          element={
+            <AdminRoute>
+              <AdminCreateQuestion />
+            </AdminRoute>
+          }
+        />
         <Route
           path="/admin/question-bank"
-          element={<AdminCreateQuestionBank />}
+          element={
+            <AdminRoute>
+              <AdminCreateQuestionBank />
+            </AdminRoute>
+          }
         />
-        <Route path="/admin/exam" element={<AdminCreateExam />} />
-        <Route path="/admin/analytics" element={<AdminAnalytics />} />
-        <Route path="/admin/proctor-logs" element={<AdminProctorLogs />} />
+        <Route
+          path="/admin/exam"
+          element={
+            <AdminRoute>
+              <AdminCreateExam />
+            </AdminRoute>
+          }
+        />
+        <Route
+          path="/admin/analytics"
+          element={
+            <AdminRoute>
+              <AdminAnalytics />
+            </AdminRoute>
+          }
+        />
+        <Route
+          path="/admin/proctor-logs"
+          element={
+            <AdminRoute>
+              <AdminProctorLogs />
+            </AdminRoute>
+          }
+        />
       </Routes>
     </BrowserRouter>
   </React.StrictMode>
