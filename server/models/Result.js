@@ -2,17 +2,29 @@ const mongoose = require("mongoose");
 
 const resultSchema = new mongoose.Schema(
   {
+    user: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: "User",
+      required: true,
+    },
     exam: {
       type: mongoose.Schema.Types.ObjectId,
       ref: "Exam",
+      required: true,
     },
     answers: [
       {
-        questionId: mongoose.Schema.Types.ObjectId,
+        questionId: {
+          type: mongoose.Schema.Types.ObjectId,
+          ref: "Question",
+        },
         selectedAnswer: String,
       },
     ],
-    score: Number,
+    score: {
+      type: Number,
+      default: 0,
+    },
   },
   { timestamps: true }
 );

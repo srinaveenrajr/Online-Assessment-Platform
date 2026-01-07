@@ -10,35 +10,38 @@ export default function ExamPage() {
   const [exam, setExam] = useState(null);
   const [answers, setAnswers] = useState({});
 
-  // Fetch exam data from backend
   useEffect(() => {
     const fetchExam = async () => {
       try {
-        const token = localStorage.getItem("token");
-        const res = await axios.get(`http://localhost:5000/api/exams/${id}`, {
-          headers: {
-            Authorization: `Bearer ${token}`,
-          },
-        });
+        setAnswers({}); // clear old answers on re-attempt
 
-        // Backend returns questions populated from Question model
+        const token = localStorage.getItem("token");
+
+        // ✅ IMPORTANT: CALL /start ROUTE
+        const res = await axios.get(
+          `http://localhost:5000/api/exams/${id}/start`,
+          {
+            headers: {
+              Authorization: `Bearer ${token}`,
+            },
+          }
+        );
+
         setExam(res.data);
       } catch (err) {
-        alert("Failed to load exam");
+        alert(err.response?.data?.message || "Failed to load exam");
       }
     };
 
     fetchExam();
   }, [id]);
 
-  // Handle form submission
   const handleSubmit = async (e) => {
     e.preventDefault();
 
     try {
       const token = localStorage.getItem("token");
 
-      // Format answers as expected by backend
       const formattedAnswers = Object.keys(answers).map((qId) => ({
         questionId: qId,
         selectedAnswer: answers[qId],
@@ -51,23 +54,26 @@ export default function ExamPage() {
           answers: formattedAnswers,
         },
         {
-          headers: { Authorization: `Bearer ${token}` },
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
         }
       );
 
-      navigate(`/result/${id}`, { state: { score: res.data.score } });
+      navigate(`/result/${id}`);
     } catch (err) {
-      alert(
-        err.response?.data?.message || "Submission failed. Please try again."
-      );
+      alert(err.response?.data?.message || "Submission failed");
     }
   };
 
-  if (!exam) return <div className="p-8 text-white">Loading exam...</div>;
+  if (!exam) {
+    return <div className="p-8 text-white">Loading exam...</div>;
+  }
 
   return (
     <>
       <Navbar />
+
       <div className="p-8 bg-gray-900 min-h-screen text-white">
         <h2 className="text-3xl font-bold mb-6">{exam.title}</h2>
 

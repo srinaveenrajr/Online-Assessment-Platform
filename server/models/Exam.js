@@ -2,14 +2,26 @@ const mongoose = require("mongoose");
 
 const examSchema = new mongoose.Schema(
   {
-    title: String,
-    duration: Number,
+    title: {
+      type: String,
+      required: true,
+    },
     questions: [
       {
         type: mongoose.Schema.Types.ObjectId,
         ref: "Question",
       },
     ],
+    startTime: {
+      type: Date,
+    },
+    endTime: {
+      type: Date,
+    },
+    duration: {
+      type: Number, // minutes
+      required: true,
+    },
   },
   { timestamps: true }
 );

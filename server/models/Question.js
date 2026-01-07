@@ -8,16 +8,28 @@ const questionSchema = new mongoose.Schema(
     },
     options: {
       type: [String],
-      required: true,
+      default: [],
     },
     correctAnswer: {
+      type: String,
+      required: true,
+    },
+    type: {
+      type: String,
+      enum: ["mcq", "truefalse"],
+      required: true,
+    },
+    topic: {
       type: String,
       required: true,
     },
     difficulty: {
       type: String,
       enum: ["easy", "medium", "hard"],
-      default: "easy",
+      required: true,
+    },
+    explanation: {
+      type: String,
     },
   },
   { timestamps: true }
