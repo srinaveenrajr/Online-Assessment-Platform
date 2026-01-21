@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from "react";
 import axios from "axios";
 import { useNavigate } from "react-router-dom";
-import Navbar from "../components/Navbar";
+import Navbar from "../components/NavBar";
 
 export default function Dashboard() {
   const [exams, setExams] = useState([]);
@@ -12,11 +12,14 @@ export default function Dashboard() {
       try {
         const token = localStorage.getItem("token");
 
-        const res = await axios.get("http://localhost:5000/api/exams", {
-          headers: {
-            Authorization: `Bearer ${token}`,
-          },
-        });
+        const res = await axios.get(
+          "https://online-assessment-platform-backend-1.onrender.com/api/exams",
+          {
+            headers: {
+              Authorization: `Bearer ${token}`,
+            },
+          }
+        );
 
         const validExams = Array.isArray(res.data)
           ? res.data.filter(

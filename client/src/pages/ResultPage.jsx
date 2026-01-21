@@ -1,7 +1,7 @@
 import { useEffect, useState } from "react";
 import axios from "axios";
 import { useParams, useNavigate } from "react-router-dom";
-import Navbar from "../components/Navbar";
+import Navbar from "../components/NavBar";
 
 export default function ResultPage() {
   const { id } = useParams();
@@ -16,7 +16,7 @@ export default function ResultPage() {
         const token = localStorage.getItem("token");
 
         const res = await axios.get(
-          `http://localhost:5000/api/results/exam/${id}`,
+          `https://online-assessment-platform-backend-1.onrender.com/api/results/exam/${id}`,
           {
             headers: {
               Authorization: `Bearer ${token}`,
